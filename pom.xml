@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.phasetwo.keycloak</groupId>
-  <artifactId>simple-admin-client</artifactId>
+  <artifactId>keycloak-admin</artifactId>
   <packaging>jar</packaging>
   <version>26.0.8</version>
 
@@ -40,8 +40,8 @@
   </properties>
 
   <scm>
-    <url>https://github.com/p2-inc/simple-admin-client</url>
-    <connection>scm:git:git@github.com:p2-inc/simple-admin-client.git</connection>
+    <url>https://github.com/p2-inc/keycloak-admin</url>
+    <connection>scm:git:git@github.com:p2-inc/keycloak-admin</connection>
   </scm>
 
   <build>
@@ -111,12 +111,25 @@
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
       <version>${keycloak.version}</version>
-      <scope>provided</scope>
+      <optional>true</optional>
+      <exclusions>
+	<exclusion>
+	  <groupId>*</groupId>
+	  <artifactId>*</artifactId>
+	</exclusion>
+      </exclusions>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-common</artifactId>
+      <version>${keycloak.version}</version>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-admin-client</artifactId>
       <version>${keycloak-admin-client.version}</version>
+      <optional>true</optional>
       <exclusions>
 	<exclusion>
 	  <groupId>*</groupId>
@@ -134,6 +147,36 @@
       <groupId>org.apache.httpcomponents</groupId>
       <artifactId>httpcore</artifactId>
       <version>${httpcore.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-annotations</artifactId>
+      <version>${jackson.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-core</artifactId>
+      <version>${jackson.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.core</groupId>
+      <artifactId>jackson-databind</artifactId>
+      <version>${jackson.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jdk8</artifactId>
+      <version>${jackson.version}</version>
+      <optional>true</optional>
+    </dependency>
+    <dependency>
+      <groupId>com.fasterxml.jackson.datatype</groupId>
+      <artifactId>jackson-datatype-jsr310</artifactId>
+      <version>${jackson.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -165,13 +208,13 @@
     <dependency>
       <groupId>com.github.dasniko</groupId>
       <artifactId>testcontainers-keycloak</artifactId>
-      <version>3.5.1</version>
+      <version>4.1.1</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
-      <version>1.5.10</version>
+      <version>1.5.32</version>
       <scope>test</scope>
     </dependency>
     <dependency>
