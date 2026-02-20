@@ -3,7 +3,7 @@
   <groupId>io.phasetwo.keycloak</groupId>
   <artifactId>keycloak-admin</artifactId>
   <packaging>jar</packaging>
-  <version>26_0_8.1-SNAPSHOT</version>
+  <version>0.1-SNAPSHOT</version>
 
   <parent>
     <groupId>com.github.xgp</groupId>
@@ -102,6 +102,15 @@
         <groupId>com.spotify.fmt</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
         <version>2.29</version>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>3.4.1</version>
+        <configuration>
+          <source>${java.version}</source>
+          <doclint>none</doclint>
+        </configuration>
       </plugin>
     </plugins>
   </build>
