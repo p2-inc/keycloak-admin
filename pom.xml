@@ -36,7 +36,7 @@
     <junit.version>5.11.2</junit.version>
     <keycloak.version>26.5.4</keycloak.version>
     <keycloak-admin-client.version>26.0.8</keycloak-admin-client.version>
-    <ossrh.url>https://s01.oss.sonatype.org</ossrh.url>
+    <ossrh.url>https://ossrh-staging-api.central.sonatype.com</ossrh.url>
   </properties>
 
   <scm>
