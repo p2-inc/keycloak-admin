@@ -3,7 +3,7 @@
   <groupId>io.phasetwo.keycloak</groupId>
   <artifactId>keycloak-admin</artifactId>
   <packaging>jar</packaging>
-  <version>26.0.8</version>
+  <version>26_0_8.1-SNAPSHOT</version>
 
   <parent>
     <groupId>com.github.xgp</groupId>
@@ -34,7 +34,7 @@
     <httpcore.version>4.4.16</httpcore.version>
     <jackson.version>2.17.2</jackson.version>
     <junit.version>5.11.2</junit.version>
-    <keycloak.version>26.5.3</keycloak.version>
+    <keycloak.version>26.5.4</keycloak.version>
     <keycloak-admin-client.version>26.0.8</keycloak-admin-client.version>
     <ossrh.url>https://s01.oss.sonatype.org</ossrh.url>
   </properties>
