@@ -3,7 +3,7 @@
   <groupId>io.phasetwo.keycloak</groupId>
   <artifactId>keycloak-admin</artifactId>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.1</version>
   <name>Phase Two Keycloak Admin Client</name>
   <description>A Keycloak Admin Client library that is not dependent on the Resteasy JAX-RS implementations.</description>
   <url>https://github.com/p2-inc/keycloak-admin</url>
@@ -45,7 +45,7 @@
   <scm>
     <url>https://github.com/p2-inc/keycloak-admin</url>
     <connection>scm:git:git@github.com:p2-inc/keycloak-admin</connection>
-    <tag>HEAD</tag>
+    <tag>v0.1</tag>
   </scm>
 
   <build>
