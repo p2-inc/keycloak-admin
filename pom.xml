@@ -42,6 +42,7 @@
   <scm>
     <url>https://github.com/p2-inc/keycloak-admin</url>
     <connection>scm:git:git@github.com:p2-inc/keycloak-admin</connection>
+    <tag>HEAD</tag>
   </scm>
 
   <build>
