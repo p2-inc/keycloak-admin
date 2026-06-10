@@ -6,7 +6,10 @@ import io.phasetwo.keycloak.admin.resource.ResourceProxyFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.HttpClients;
 import org.keycloak.admin.client.Config;
 import org.keycloak.admin.client.resource.RealmResource;
@@ -32,11 +35,29 @@ public class Keycloak implements AutoCloseable {
       String grantType,
       HttpClient httpClient,
       String authToken,
-      String scope) {
+      String scope,
+      Duration timeout) {
     this.config =
         new Config(serverUrl, realm, username, password, clientId, clientSecret, grantType, scope);
-    this.client = httpClient != null ? httpClient : HttpClients.createDefault();
-    this.ownClient = httpClient == null;
+    if (httpClient != null) {
+      this.client = httpClient;
+      this.ownClient = false;
+    } else if (timeout != null) {
+      int millis = (int) timeout.toMillis();
+      this.client =
+          HttpClientBuilder.create()
+              .setDefaultRequestConfig(
+                  RequestConfig.custom()
+                      .setSocketTimeout(millis)
+                      .setConnectTimeout(millis)
+                      .setConnectionRequestTimeout(millis)
+                      .build())
+              .build();
+      this.ownClient = true;
+    } else {
+      this.client = HttpClients.createDefault();
+      this.ownClient = true;
+    }
     this.authToken = authToken;
     this.tokenManager = authToken == null ? new TokenManager(config, this.client) : null;
   }
@@ -49,13 +70,13 @@ public class Keycloak implements AutoCloseable {
       String clientId,
       String clientSecret) {
     return new Keycloak(
-        serverUrl, realm, username, password, clientId, clientSecret, PASSWORD, null, null, null);
+        serverUrl, realm, username, password, clientId, clientSecret, PASSWORD, null, null, null, null);
   }
 
   public static Keycloak getInstance(
       String serverUrl, String realm, String clientId, String authToken) {
     return new Keycloak(
-        serverUrl, realm, null, null, clientId, null, PASSWORD, null, authToken, null);
+        serverUrl, realm, null, null, clientId, null, PASSWORD, null, authToken, null, null);
   }
 
   public RealmsResource realms() {
