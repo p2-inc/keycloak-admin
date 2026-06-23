@@ -2,6 +2,7 @@ package io.phasetwo.keycloak.admin;
 
 import jakarta.ws.rs.WebApplicationException;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.Map;
 import org.apache.http.client.HttpClient;
 import org.keycloak.admin.client.Config;
@@ -11,10 +12,21 @@ public class TokenService {
 
   private final Config config;
   private final HttpClient client;
+  private final Duration socketTimeout;
+  private final Duration connectTimeout;
+  private final Duration connectionRequestTimeout;
 
-  public TokenService(Config config, HttpClient client) {
+  public TokenService(
+      Config config,
+      HttpClient client,
+      Duration socketTimeout,
+      Duration connectTimeout,
+      Duration connectionRequestTimeout) {
     this.config = config;
     this.client = client;
+    this.socketTimeout = socketTimeout;
+    this.connectTimeout = connectTimeout;
+    this.connectionRequestTimeout = connectionRequestTimeout;
   }
 
   public AccessTokenResponse grantToken(String realm, Map<String, String> formParams) {
@@ -27,7 +39,7 @@ public class TokenService {
 
   public void logout(String realm, Map<String, String> formParams) {
     String url = config.getServerUrl() + "/realms/" + realm + "/protocol/openid-connect/logout";
-    Http request = Http.doPost(url, client).acceptJson();
+    Http request = withTimeouts(Http.doPost(url, client).acceptJson());
     addAuth(request);
     addFormParams(request, formParams);
     try (Http.Response response = request.asResponse()) {
@@ -42,7 +54,7 @@ public class TokenService {
 
   private AccessTokenResponse tokenRequest(String path, Map<String, String> formParams) {
     String url = config.getServerUrl() + path;
-    Http request = Http.doPost(url, client).acceptJson();
+    Http request = withTimeouts(Http.doPost(url, client).acceptJson());
     addAuth(request);
     addFormParams(request, formParams);
     try (Http.Response response = request.asResponse()) {
@@ -54,6 +66,13 @@ public class TokenService {
     } catch (IOException e) {
       throw new IllegalStateException("Failed to call token endpoint", e);
     }
+  }
+
+  private Http withTimeouts(Http request) {
+    return request
+        .socketTimeout(socketTimeout)
+        .connectTimeout(connectTimeout)
+        .connectionRequestTimeout(connectionRequestTimeout);
   }
 
   private void addAuth(Http request) {

@@ -8,6 +8,7 @@ import static org.keycloak.OAuth2Constants.SCOPE;
 import static org.keycloak.OAuth2Constants.USERNAME;
 
 import jakarta.ws.rs.WebApplicationException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -27,9 +28,15 @@ public class TokenManager {
   private long refreshExpirationTime;
   private long minTokenValidity = DEFAULT_MIN_VALIDITY;
 
-  public TokenManager(Config config, HttpClient client) {
+  public TokenManager(
+      Config config,
+      HttpClient client,
+      Duration socketTimeout,
+      Duration connectTimeout,
+      Duration connectionRequestTimeout) {
     this.config = config;
-    this.tokenService = new TokenService(config, client);
+    this.tokenService =
+        new TokenService(config, client, socketTimeout, connectTimeout, connectionRequestTimeout);
     this.accessTokenGrantType = config.getGrantType();
   }
 

@@ -2,6 +2,7 @@ package io.phasetwo.keycloak.admin;
 
 import static org.keycloak.OAuth2Constants.PASSWORD;
 
+import java.time.Duration;
 import org.apache.http.client.HttpClient;
 import org.keycloak.admin.client.Config;
 
@@ -16,6 +17,9 @@ public class KeycloakBuilder {
   private HttpClient httpClient;
   private String authorization;
   private String scope;
+  private Duration socketTimeout;
+  private Duration connectTimeout;
+  private Duration connectionRequestTimeout;
 
   private KeycloakBuilder() {}
 
@@ -74,6 +78,21 @@ public class KeycloakBuilder {
     return this;
   }
 
+  public KeycloakBuilder socketTimeout(Duration socketTimeout) {
+    this.socketTimeout = socketTimeout;
+    return this;
+  }
+
+  public KeycloakBuilder connectTimeout(Duration connectTimeout) {
+    this.connectTimeout = connectTimeout;
+    return this;
+  }
+
+  public KeycloakBuilder connectionRequestTimeout(Duration connectionRequestTimeout) {
+    this.connectionRequestTimeout = connectionRequestTimeout;
+    return this;
+  }
+
   public Keycloak build() {
     if (serverUrl == null) {
       throw new IllegalStateException("serverUrl required");
@@ -105,6 +124,9 @@ public class KeycloakBuilder {
         grantType,
         httpClient,
         authorization,
-        scope);
+        scope,
+        socketTimeout,
+        connectTimeout,
+        connectionRequestTimeout);
   }
 }

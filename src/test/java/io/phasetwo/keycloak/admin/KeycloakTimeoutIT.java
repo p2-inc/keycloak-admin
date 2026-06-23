@@ -170,7 +170,9 @@ class KeycloakTimeoutIT {
         .grantType(OAuth2Constants.PASSWORD)
         .username("admin")
         .password("admin")
-        .timeout(CLIENT_TIMEOUT)
+        .socketTimeout(CLIENT_TIMEOUT)
+        .connectTimeout(CLIENT_TIMEOUT)
+        .connectionRequestTimeout(CLIENT_TIMEOUT)
         .clientId("admin-cli")
         .build();
   }
