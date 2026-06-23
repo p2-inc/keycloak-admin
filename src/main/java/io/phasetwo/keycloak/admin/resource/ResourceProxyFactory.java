@@ -21,6 +21,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
+import java.time.Duration;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -47,14 +48,18 @@ public final class ResourceProxyFactory {
       String baseUrl,
       HttpClient client,
       Supplier<String> tokenSupplier,
-      Consumer<String> tokenInvalidator) {
+      Consumer<String> tokenInvalidator,
+      Duration socketTimeout,
+      Duration connectTimeout,
+      Duration connectionRequestTimeout) {
     Objects.requireNonNull(resourceInterface, "resourceInterface");
     Objects.requireNonNull(baseUrl, "baseUrl");
     Objects.requireNonNull(client, "client");
 
     InvocationHandler handler =
         new ResourceInvocationHandler(
-            resourceInterface, normalizeBaseUrl(baseUrl), client, tokenSupplier, tokenInvalidator);
+            resourceInterface, normalizeBaseUrl(baseUrl), client, tokenSupplier, tokenInvalidator,
+            socketTimeout, connectTimeout, connectionRequestTimeout);
     return resourceInterface.cast(
         Proxy.newProxyInstance(
             resourceInterface.getClassLoader(), new Class<?>[] {resourceInterface}, handler));
@@ -74,19 +79,28 @@ public final class ResourceProxyFactory {
     private final HttpClient client;
     private final Supplier<String> tokenSupplier;
     private final Consumer<String> tokenInvalidator;
+    private final Duration socketTimeout;
+    private final Duration connectTimeout;
+    private final Duration connectionRequestTimeout;
 
     private ResourceInvocationHandler(
         Class<?> resourceInterface,
         String baseUrl,
         HttpClient client,
         Supplier<String> tokenSupplier,
-        Consumer<String> tokenInvalidator) {
+        Consumer<String> tokenInvalidator,
+        Duration socketTimeout,
+        Duration connectTimeout,
+        Duration connectionRequestTimeout) {
       this.resourceInterface = resourceInterface;
       this.interfacePath = pathValue(resourceInterface.getAnnotation(Path.class));
       this.baseUrl = baseUrl;
       this.client = client;
       this.tokenSupplier = tokenSupplier;
       this.tokenInvalidator = tokenInvalidator;
+      this.socketTimeout = socketTimeout;
+      this.connectTimeout = connectTimeout;
+      this.connectionRequestTimeout = connectionRequestTimeout;
     }
 
     @Override
@@ -103,7 +117,8 @@ public final class ResourceProxyFactory {
             replacePathParams(
                 joinPaths(joinPaths(baseUrl, interfacePath), methodPath), method, args);
         return ResourceProxyFactory.create(
-            method.getReturnType(), nestedPath, client, tokenSupplier, tokenInvalidator);
+            method.getReturnType(), nestedPath, client, tokenSupplier, tokenInvalidator,
+            socketTimeout, connectTimeout, connectionRequestTimeout);
       }
 
       if (httpMethod == null) {
@@ -212,15 +227,20 @@ public final class ResourceProxyFactory {
     }
 
     private Http newRequest(String httpMethod, String url) {
-      return switch (httpMethod) {
-        case "GET" -> Http.doGet(url, client);
-        case "POST" -> Http.doPost(url, client);
-        case "PUT" -> Http.doPut(url, client);
-        case "DELETE" -> Http.doDelete(url, client);
-        case "PATCH" -> Http.doPatch(url, client);
-        case "HEAD" -> Http.doHead(url, client);
-        default -> throw new IllegalStateException("Unsupported HTTP method " + httpMethod);
-      };
+      Http request =
+          switch (httpMethod) {
+            case "GET" -> Http.doGet(url, client);
+            case "POST" -> Http.doPost(url, client);
+            case "PUT" -> Http.doPut(url, client);
+            case "DELETE" -> Http.doDelete(url, client);
+            case "PATCH" -> Http.doPatch(url, client);
+            case "HEAD" -> Http.doHead(url, client);
+            default -> throw new IllegalStateException("Unsupported HTTP method " + httpMethod);
+          };
+      return request
+          .socketTimeout(socketTimeout)
+          .connectTimeout(connectTimeout)
+          .connectionRequestTimeout(connectionRequestTimeout);
     }
 
     private Object toReturnValue(Method method, Http.Response response) throws IOException {

@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.io.IOException;
+import java.time.Duration;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.StringWriter;
@@ -45,7 +46,6 @@ import org.apache.http.message.BasicNameValuePair;
 public class Http {
 
   private static final ObjectMapper mapper = new ObjectMapper();
-  private static final int UNDEFINED_TIMEOUT = -1;
 
   private final HttpClient client;
 
@@ -55,13 +55,9 @@ public class Http {
   private Map<String, String> params;
   private Object entity;
 
-  private int socketTimeOutMillis = UNDEFINED_TIMEOUT;
-
-  private int connectTimeoutMillis = UNDEFINED_TIMEOUT;
-
-  private int connectionRequestTimeoutMillis = UNDEFINED_TIMEOUT;
-
-  private RequestConfig.Builder requestConfigBuilder;
+  private Duration socketTimeout;
+  private Duration connectTimeout;
+  private Duration connectionRequestTimeout;
 
   protected Http(String url, String method, HttpClient client) {
     this.client = client;
@@ -131,18 +127,18 @@ public class Http {
     return this;
   }
 
-  public Http socketTimeOutMillis(int timeout) {
-    this.socketTimeOutMillis = timeout;
+  public Http socketTimeout(Duration timeout) {
+    this.socketTimeout = timeout;
     return this;
   }
 
-  public Http connectTimeoutMillis(int timeout) {
-    this.connectTimeoutMillis = timeout;
+  public Http connectTimeout(Duration timeout) {
+    this.connectTimeout = timeout;
     return this;
   }
 
-  public Http connectionRequestTimeoutMillis(int timeout) {
-    this.connectionRequestTimeoutMillis = timeout;
+  public Http connectionRequestTimeout(Duration timeout) {
+    this.connectionRequestTimeout = timeout;
     return this;
   }
 
@@ -248,30 +244,16 @@ public class Http {
       }
     }
 
-    if (socketTimeOutMillis != UNDEFINED_TIMEOUT) {
-      requestConfigBuilder().setSocketTimeout(socketTimeOutMillis);
-    }
-
-    if (connectTimeoutMillis != UNDEFINED_TIMEOUT) {
-      requestConfigBuilder().setConnectTimeout(connectTimeoutMillis);
-    }
-
-    if (connectionRequestTimeoutMillis != UNDEFINED_TIMEOUT) {
-      requestConfigBuilder().setConnectionRequestTimeout(connectionRequestTimeoutMillis);
-    }
-
-    if (requestConfigBuilder != null) {
-      httpRequest.setConfig(requestConfigBuilder.build());
+    if (socketTimeout != null || connectTimeout != null || connectionRequestTimeout != null) {
+      RequestConfig.Builder config = RequestConfig.custom();
+      if (socketTimeout != null) config.setSocketTimeout((int) socketTimeout.toMillis());
+      if (connectTimeout != null) config.setConnectTimeout((int) connectTimeout.toMillis());
+      if (connectionRequestTimeout != null)
+        config.setConnectionRequestTimeout((int) connectionRequestTimeout.toMillis());
+      httpRequest.setConfig(config.build());
     }
 
     return new Response(client.execute(httpRequest));
-  }
-
-  private RequestConfig.Builder requestConfigBuilder() {
-    if (requestConfigBuilder == null) {
-      requestConfigBuilder = RequestConfig.custom();
-    }
-    return requestConfigBuilder;
   }
 
   private URI appendParameterToUrl(String url) {

@@ -6,6 +6,7 @@ import io.phasetwo.keycloak.admin.resource.ResourceProxyFactory;
 import java.io.Closeable;
 import java.io.IOException;
 import java.net.URI;
+import java.time.Duration;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.keycloak.admin.client.Config;
@@ -22,6 +23,12 @@ public class Keycloak implements AutoCloseable {
   private final String authToken;
   private boolean closed;
 
+  private static final Duration DEFAULT_TIMEOUT = Duration.ofSeconds(30);
+
+  private final Duration socketTimeout;
+  private final Duration connectTimeout;
+  private final Duration connectionRequestTimeout;
+
   Keycloak(
       String serverUrl,
       String realm,
@@ -32,13 +39,30 @@ public class Keycloak implements AutoCloseable {
       String grantType,
       HttpClient httpClient,
       String authToken,
-      String scope) {
+      String scope,
+      Duration socketTimeout,
+      Duration connectTimeout,
+      Duration connectionRequestTimeout) {
     this.config =
         new Config(serverUrl, realm, username, password, clientId, clientSecret, grantType, scope);
-    this.client = httpClient != null ? httpClient : HttpClients.createDefault();
-    this.ownClient = httpClient == null;
+    this.socketTimeout = socketTimeout != null ? socketTimeout : DEFAULT_TIMEOUT;
+    this.connectTimeout = connectTimeout != null ? connectTimeout : DEFAULT_TIMEOUT;
+    this.connectionRequestTimeout =
+        connectionRequestTimeout != null ? connectionRequestTimeout : DEFAULT_TIMEOUT;
+    if (httpClient != null) {
+      this.client = httpClient;
+      this.ownClient = false;
+    } else {
+      this.client = HttpClients.createDefault();
+      this.ownClient = true;
+    }
     this.authToken = authToken;
-    this.tokenManager = authToken == null ? new TokenManager(config, this.client) : null;
+    this.tokenManager =
+        authToken == null
+            ? new TokenManager(
+                config, this.client, this.socketTimeout, this.connectTimeout,
+                this.connectionRequestTimeout)
+            : null;
   }
 
   public static Keycloak getInstance(
@@ -49,13 +73,15 @@ public class Keycloak implements AutoCloseable {
       String clientId,
       String clientSecret) {
     return new Keycloak(
-        serverUrl, realm, username, password, clientId, clientSecret, PASSWORD, null, null, null);
+        serverUrl, realm, username, password, clientId, clientSecret, PASSWORD, null, null, null,
+        null, null, null);
   }
 
   public static Keycloak getInstance(
       String serverUrl, String realm, String clientId, String authToken) {
     return new Keycloak(
-        serverUrl, realm, null, null, clientId, null, PASSWORD, null, authToken, null);
+        serverUrl, realm, null, null, clientId, null, PASSWORD, null, authToken, null,
+        null, null, null);
   }
 
   public RealmsResource realms() {
@@ -64,7 +90,10 @@ public class Keycloak implements AutoCloseable {
         config.getServerUrl(),
         client,
         this::resolveAccessToken,
-        this::invalidateToken);
+        this::invalidateToken,
+        socketTimeout,
+        connectTimeout,
+        connectionRequestTimeout);
   }
 
   public RealmResource realm(String realmName) {
@@ -77,7 +106,10 @@ public class Keycloak implements AutoCloseable {
         config.getServerUrl(),
         client,
         this::resolveAccessToken,
-        this::invalidateToken);
+        this::invalidateToken,
+        socketTimeout,
+        connectTimeout,
+        connectionRequestTimeout);
   }
 
   public TokenManager tokenManager() {
@@ -90,7 +122,10 @@ public class Keycloak implements AutoCloseable {
         absoluteURI.toString(),
         client,
         this::resolveAccessToken,
-        this::invalidateToken);
+        this::invalidateToken,
+        socketTimeout,
+        connectTimeout,
+        connectionRequestTimeout);
   }
 
   @Override
