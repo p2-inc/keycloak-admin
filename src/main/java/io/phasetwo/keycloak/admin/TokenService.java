@@ -1,5 +1,9 @@
 package io.phasetwo.keycloak.admin;
 
+import static org.keycloak.OAuth2Constants.CLIENT_ASSERTION;
+import static org.keycloak.OAuth2Constants.CLIENT_ASSERTION_TYPE;
+import static org.keycloak.OAuth2Constants.CLIENT_ASSERTION_TYPE_JWT;
+
 import jakarta.ws.rs.WebApplicationException;
 import java.io.IOException;
 import java.time.Duration;
@@ -15,6 +19,7 @@ public class TokenService {
   private final Duration socketTimeout;
   private final Duration connectTimeout;
   private final Duration connectionRequestTimeout;
+  private final ClientAssertionProvider clientAssertion;
 
   public TokenService(
       Config config,
@@ -22,11 +27,22 @@ public class TokenService {
       Duration socketTimeout,
       Duration connectTimeout,
       Duration connectionRequestTimeout) {
+    this(config, client, socketTimeout, connectTimeout, connectionRequestTimeout, null);
+  }
+
+  public TokenService(
+      Config config,
+      HttpClient client,
+      Duration socketTimeout,
+      Duration connectTimeout,
+      Duration connectionRequestTimeout,
+      ClientAssertionProvider clientAssertion) {
     this.config = config;
     this.client = client;
     this.socketTimeout = socketTimeout;
     this.connectTimeout = connectTimeout;
     this.connectionRequestTimeout = connectionRequestTimeout;
+    this.clientAssertion = clientAssertion;
   }
 
   public AccessTokenResponse grantToken(String realm, Map<String, String> formParams) {
@@ -40,7 +56,7 @@ public class TokenService {
   public void logout(String realm, Map<String, String> formParams) {
     String url = config.getServerUrl() + "/realms/" + realm + "/protocol/openid-connect/logout";
     Http request = withTimeouts(Http.doPost(url, client).acceptJson());
-    addAuth(request);
+    addAuth(request, url);
     addFormParams(request, formParams);
     try (Http.Response response = request.asResponse()) {
       if (response.getStatus() >= 400) {
@@ -55,7 +71,7 @@ public class TokenService {
   private AccessTokenResponse tokenRequest(String path, Map<String, String> formParams) {
     String url = config.getServerUrl() + path;
     Http request = withTimeouts(Http.doPost(url, client).acceptJson());
-    addAuth(request);
+    addAuth(request, url);
     addFormParams(request, formParams);
     try (Http.Response response = request.asResponse()) {
       if (response.getStatus() >= 400) {
@@ -75,7 +91,18 @@ public class TokenService {
         .connectionRequestTimeout(connectionRequestTimeout);
   }
 
-  private void addAuth(Http request) {
+  private void addAuth(Http request, String url) {
+    if (clientAssertion != null) {
+      // A fresh assertion per request: it carries a jti and a short exp, so reusing one across
+      // requests is what replay protection on the server side is there to reject.
+      String assertion =
+          clientAssertion.assertion(
+              new ClientAssertionContext(
+                  config.getServerUrl(), config.getRealm(), config.getClientId(), url));
+      request.param(CLIENT_ASSERTION_TYPE, CLIENT_ASSERTION_TYPE_JWT);
+      request.param(CLIENT_ASSERTION, assertion);
+      return;
+    }
     if (!config.isPublicClient()) {
       request.authBasic(config.getClientId(), config.getClientSecret());
     }
