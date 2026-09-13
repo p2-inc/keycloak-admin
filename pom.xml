@@ -110,6 +110,15 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
         <version>3.5.4</version>
+        <configuration>
+          <systemPropertyVariables>
+            <!--
+              The container the tests run against, tied to the version they compile against so the
+              two cannot drift. TestKeycloak.IMAGE carries a matching default for IDE runs.
+            -->
+            <keycloak-version>${keycloak.version}</keycloak-version>
+          </systemPropertyVariables>
+        </configuration>
         <executions>
           <execution>
             <goals>

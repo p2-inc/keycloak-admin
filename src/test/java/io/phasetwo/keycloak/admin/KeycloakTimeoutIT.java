@@ -29,7 +29,7 @@ import org.testcontainers.containers.ToxiproxyContainer;
 @TestInstance(Lifecycle.PER_CLASS)
 class KeycloakTimeoutIT {
 
-  private static final String KC_IMAGE = "quay.io/keycloak/keycloak:26.5.3";
+  private static final String KC_IMAGE = TestKeycloak.IMAGE;
   private static final String TOXI_IMAGE = "ghcr.io/shopify/toxiproxy:2.9.0";
   private static final Duration CLIENT_TIMEOUT = Duration.ofSeconds(10);
   private static final int PROXY_PORT = 8666;
