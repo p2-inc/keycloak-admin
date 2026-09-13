@@ -13,6 +13,7 @@ public class KeycloakBuilder {
   private String password;
   private String clientId;
   private String clientSecret;
+  private ClientAssertionProvider clientAssertion;
   private String grantType;
   private HttpClient httpClient;
   private String authorization;
@@ -60,6 +61,20 @@ public class KeycloakBuilder {
 
   public KeycloakBuilder clientSecret(String clientSecret) {
     this.clientSecret = clientSecret;
+    return this;
+  }
+
+  /**
+   * Authenticates the client with an RFC 7523 JWT assertion instead of a client secret.
+   *
+   * <p>See {@link PrivateKeyJwt} for the common case of signing with a local private key. The
+   * matching Keycloak client must have its client authenticator set to {@code client-jwt}.
+   *
+   * @param clientAssertion the assertion provider
+   * @return this builder
+   */
+  public KeycloakBuilder clientAssertion(ClientAssertionProvider clientAssertion) {
+    this.clientAssertion = clientAssertion;
     return this;
   }
 
@@ -114,6 +129,9 @@ public class KeycloakBuilder {
     if (authorization == null && clientId == null) {
       throw new IllegalStateException("clientId required");
     }
+    if (clientAssertion != null && clientSecret != null) {
+      throw new IllegalStateException("clientSecret and clientAssertion are mutually exclusive");
+    }
     return new Keycloak(
         serverUrl,
         realm,
@@ -127,6 +145,7 @@ public class KeycloakBuilder {
         scope,
         socketTimeout,
         connectTimeout,
-        connectionRequestTimeout);
+        connectionRequestTimeout,
+        clientAssertion);
   }
 }

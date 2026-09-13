@@ -34,9 +34,25 @@ public class TokenManager {
       Duration socketTimeout,
       Duration connectTimeout,
       Duration connectionRequestTimeout) {
+    this(config, client, socketTimeout, connectTimeout, connectionRequestTimeout, null);
+  }
+
+  public TokenManager(
+      Config config,
+      HttpClient client,
+      Duration socketTimeout,
+      Duration connectTimeout,
+      Duration connectionRequestTimeout,
+      ClientAssertionProvider clientAssertion) {
     this.config = config;
     this.tokenService =
-        new TokenService(config, client, socketTimeout, connectTimeout, connectionRequestTimeout);
+        new TokenService(
+            config,
+            client,
+            socketTimeout,
+            connectTimeout,
+            connectionRequestTimeout,
+            clientAssertion);
     this.accessTokenGrantType = config.getGrantType();
   }
 

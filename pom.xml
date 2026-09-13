@@ -102,6 +102,32 @@
           <versionCommit>${buildNumber}</versionCommit>
         </configuration>
       </plugin>
+      <plugin>
+        <!--
+          Runs the *IT tests. Without this, surefire's default includes skip them and `mvn verify`
+          passes having executed nothing at all.
+        -->
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-failsafe-plugin</artifactId>
+        <version>3.5.4</version>
+        <configuration>
+          <systemPropertyVariables>
+            <!--
+              The container the tests run against, tied to the version they compile against so the
+              two cannot drift. TestKeycloak.IMAGE carries a matching default for IDE runs.
+            -->
+            <keycloak-version>${keycloak.version}</keycloak-version>
+          </systemPropertyVariables>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>integration-test</goal>
+              <goal>verify</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
       <plugin> <!-- pretty up the code using google java standards `mvn fmt:format` -->
         <groupId>com.spotify.fmt</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
@@ -228,6 +254,13 @@
       <groupId>org.testcontainers</groupId>
       <artifactId>toxiproxy</artifactId>
       <version>1.21.4</version>
+      <scope>test</scope>
+    </dependency>
+    <!-- JAX-RS runtime for the test JVM: jakarta.ws.rs exception types need a RuntimeDelegate. -->
+    <dependency>
+      <groupId>org.jboss.resteasy</groupId>
+      <artifactId>resteasy-core</artifactId>
+      <version>6.2.9.Final</version>
       <scope>test</scope>
     </dependency>
     <dependency>

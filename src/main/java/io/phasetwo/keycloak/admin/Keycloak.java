@@ -42,7 +42,8 @@ public class Keycloak implements AutoCloseable {
       String scope,
       Duration socketTimeout,
       Duration connectTimeout,
-      Duration connectionRequestTimeout) {
+      Duration connectionRequestTimeout,
+      ClientAssertionProvider clientAssertion) {
     this.config =
         new Config(serverUrl, realm, username, password, clientId, clientSecret, grantType, scope);
     this.socketTimeout = socketTimeout != null ? socketTimeout : DEFAULT_TIMEOUT;
@@ -60,8 +61,12 @@ public class Keycloak implements AutoCloseable {
     this.tokenManager =
         authToken == null
             ? new TokenManager(
-                config, this.client, this.socketTimeout, this.connectTimeout,
-                this.connectionRequestTimeout)
+                config,
+                this.client,
+                this.socketTimeout,
+                this.connectTimeout,
+                this.connectionRequestTimeout,
+                clientAssertion)
             : null;
   }
 
@@ -73,15 +78,27 @@ public class Keycloak implements AutoCloseable {
       String clientId,
       String clientSecret) {
     return new Keycloak(
-        serverUrl, realm, username, password, clientId, clientSecret, PASSWORD, null, null, null,
-        null, null, null);
+        serverUrl,
+        realm,
+        username,
+        password,
+        clientId,
+        clientSecret,
+        PASSWORD,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null,
+        null);
   }
 
   public static Keycloak getInstance(
       String serverUrl, String realm, String clientId, String authToken) {
     return new Keycloak(
-        serverUrl, realm, null, null, clientId, null, PASSWORD, null, authToken, null,
-        null, null, null);
+        serverUrl, realm, null, null, clientId, null, PASSWORD, null, authToken, null, null, null,
+        null, null);
   }
 
   public RealmsResource realms() {

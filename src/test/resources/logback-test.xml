@@ -1,0 +1,15 @@
+<configuration>
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>%d{HH:mm:ss.SSS} %-5level %logger{36} -- %msg%n</pattern>
+    </encoder>
+  </appender>
+
+  <!-- The docker-java wire log dumps every container byte at DEBUG, which buries test output. -->
+  <logger name="com.github.dockerjava" level="WARN"/>
+  <logger name="org.testcontainers" level="WARN"/>
+
+  <root level="INFO">
+    <appender-ref ref="STDOUT"/>
+  </root>
+</configuration>
