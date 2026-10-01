@@ -39,6 +39,7 @@
     <junit.version>5.11.2</junit.version>
     <keycloak.version>26.8.0</keycloak.version>
     <keycloak-admin-client.version>26.0.9</keycloak-admin-client.version>
+    <jacoco.version>0.8.14</jacoco.version>
     <ossrh.url>https://ossrh-staging-api.central.sonatype.com</ossrh.url>
   </properties>
 
@@ -132,6 +133,40 @@
         <groupId>com.spotify.fmt</groupId>
         <artifactId>fmt-maven-plugin</artifactId>
         <version>2.29</version>
+      </plugin>
+      <plugin>
+        <!--
+          Coverage. The tests are all *IT and run under failsafe, and this is a client
+          library — the code under test runs in the test JVM, driving a Keycloak
+          container — so the ordinary agent captures it; no in-container agent needed.
+
+          The report is written to the default site/jacoco rather than failsafe's usual
+          site/jacoco-it because .github/workflows/ci.yml uploads that path and
+          jacoco-pr-comment.yml reads jacoco.xml out of the resulting artifact.
+
+          prepare-agent-integration sets the `argLine` property, which failsafe already
+          reads by default, so no argLine wiring is needed in the failsafe config.
+        -->
+        <groupId>org.jacoco</groupId>
+        <artifactId>jacoco-maven-plugin</artifactId>
+        <version>${jacoco.version}</version>
+        <executions>
+          <execution>
+            <id>prepare-agent-integration</id>
+            <goals>
+              <goal>prepare-agent-integration</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>report-integration</id>
+            <goals>
+              <goal>report-integration</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/site/jacoco</outputDirectory>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
