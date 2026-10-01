@@ -17,7 +17,7 @@ final class TestKeycloak {
    */
   static final String IMAGE =
       String.format(
-          "quay.io/keycloak/keycloak:%s", System.getProperty("keycloak-version", "26.6.1"));
+          "quay.io/keycloak/keycloak:%s", System.getProperty("keycloak-version", "26.8.0"));
 
   private TestKeycloak() {}
 }
