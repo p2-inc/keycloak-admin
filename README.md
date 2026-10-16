@@ -1,5 +1,24 @@
 # keycloak-admin
 
+<!-- phasetwo:banner:start - managed by p2-inc/shared-github-actions, edit there -->
+[![build](https://img.shields.io/github/actions/workflow/status/p2-inc/keycloak-admin/ci.yml?branch=main&label=build)](https://github.com/p2-inc/keycloak-admin/actions/workflows/ci.yml) [![Maven Central](https://img.shields.io/maven-central/v/io.phasetwo.keycloak/keycloak-admin?label=maven%20central)](https://central.sonatype.com/artifact/io.phasetwo.keycloak/keycloak-admin) [![license](https://img.shields.io/badge/license-ELv2-blue)](COPYING) [![docs](https://img.shields.io/badge/docs-phasetwo.io-blue)](https://phasetwo.io/docs/introduction/)
+
+📚 [Documentation](https://phasetwo.io/docs/introduction/) • 🚀 [Hosted Keycloak](https://dash.phasetwo.io/?utm_source=github&utm_medium=readme&utm_campaign=keycloak-admin) • 🤖 [Keycloak Skills](https://github.com/p2-inc/keycloak-skills) • 💬 [Support](mailto:support@phasetwo.io)
+
+> [!TIP]
+> **Run this in our cloud, no setup needed.** Phase Two hosts Keycloak with this extension and the rest of ours built in. [Try it free with your own cluster →](https://dash.phasetwo.io/?utm_source=github&utm_medium=readme&utm_campaign=keycloak-admin)
+>
+> **Using a coding agent?** Add the Phase Two Keycloak skills ([launch post](https://phasetwo.io/blog/keycloak-skills-mcp-launch)) to Claude Code, Cursor or Codex so your agent can set up passwordless login, SSO, organizations and clusters for you:
+>
+> ```sh
+> # Install the skills (connects to our hosted MCP server)
+> claude plugin marketplace add p2-inc/keycloak-skills
+> claude plugin install phasetwo@keycloak-skills
+> # Or connect to the MCP server directly
+> claude mcp add --transport http keycloak https://mcp.phasetwo.io/mcp
+> ```
+<!-- phasetwo:banner:end -->
+
 The goal of this library is to create a Keycloak Admin Client library that is not dependent on the Resteasy JAX-RS implementations, and just uses a simple wrapper on the Apache HttpClient and Jackson libraries.
 
 ## Implementation
