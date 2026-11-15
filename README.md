@@ -91,6 +91,19 @@ Keycloak keycloak =
 A fresh assertion is minted for every token request, addressed to the realm issuer URL and valid for
 60 seconds by default. Both are configurable -- see `PrivateKeyJwt`.
 
+The Keycloak client also needs the `kc-admin-api` client scope as a default scope. Keycloak 26.8 and
+later rejects Admin REST calls whose token lacks the admin API audience and scope, and that scope is
+attached only to the built-in clients when a realm is created. A client created afterwards must have
+it added explicitly, for example in the admin console under the client's **Client scopes** tab, or
+through the Admin REST API:
+
+```java
+String scopeId = realm.clientScopes().findAll().stream()
+    .filter(s -> "kc-admin-api".equals(s.getName()))
+    .findFirst().orElseThrow().getId();
+realm.clients().get(clientUuid).addDefaultClientScope(scopeId);
+```
+
 To sign somewhere the key cannot be exported from, such as an HSM or a cloud KMS, implement
 `ClientAssertionProvider` directly rather than using `PrivateKeyJwt`:
 
