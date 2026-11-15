@@ -163,6 +163,17 @@ class PrivateKeyJwtIT {
         uuid = CreatedResponseUtil.getCreatedId(response);
       }
 
+      // Keycloak 26.8 only honours admin REST calls whose token carries the kc-admin-api scope
+      // (and so the admin API audience). Realm creation attaches that scope to the built-in
+      // clients only, so grant it to the client under test explicitly.
+      String adminApiScopeId =
+          realmResource.clientScopes().findAll().stream()
+              .filter(scope -> "kc-admin-api".equals(scope.getName()))
+              .findFirst()
+              .orElseThrow(() -> new IllegalStateException("kc-admin-api client scope missing"))
+              .getId();
+      clients.get(uuid).addDefaultClientScope(adminApiScopeId);
+
       String serviceUserId = clients.get(uuid).getServiceAccountUser().getId();
       String realmManagementId = clients.findByClientId("realm-management").get(0).getId();
       List<RoleRepresentation> realmAdmin =
